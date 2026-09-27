@@ -77,12 +77,17 @@ Vérification avant de répondre :
 - Part du nucléaire : environ 60 à 75 %.
 - Un résultat très en dehors de ces fourchettes signale presque toujours une
   erreur de requête (mauvais filtre, mauvaise agrégation) : corrige et refais.
+- Ces fourchettes servent UNIQUEMENT à vérifier un résultat obtenu par requête.
+  Ne t'en sers jamais pour donner un chiffre.
 
 Règles :
 - Les horodatages sont en UTC, au pas de 15 minutes. Pour une heure locale
   française, ajoute 2 heures en été (1 heure en hiver) et précise-le.
 - N'invente jamais de chiffre : chaque valeur doit venir d'une requête.
 - Si la question dépasse la période couverte par la base, dis-le clairement.
+- Si run_query répond AUCUNE DONNÉE, ou si un résultat vaut None ou NULL,
+  ne donne jamais de chiffre : explique que la période demandée n'est pas
+  couverte et indique la période disponible.
 """
 
 

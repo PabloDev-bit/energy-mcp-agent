@@ -53,6 +53,15 @@ def _is_safe_select(sql: str) -> bool:
     return re.match(r"^(select|with)\b", cleaned, re.IGNORECASE) is not None
 
 
+def _coverage() -> tuple[str, str]:
+    """Première et dernière date disponibles dans la base (format AAAA-MM-JJ)."""
+    with _connect_readonly() as conn:
+        start, end = conn.execute(
+            "SELECT MIN(timestamp), MAX(timestamp) FROM consommation"
+        ).fetchone()
+    return (start or "?")[:10], (end or "?")[:10]
+
+
 @mcp.tool()
 def get_schema() -> str:
     """
@@ -112,8 +121,16 @@ def run_query(sql: str) -> str:
         # On renvoie l'erreur au LLM, avec un rappel du schéma pour qu'il se corrige
         return f"Erreur SQL : {exc}\n{SCHEMA_REMINDER}"
 
-    if not rows:
-        return "Aucun résultat."
+    # Aucune ligne, ou uniquement des NULL (cas d'un AVG/SUM sur une période vide) :
+    # message explicite pour empêcher le modèle d'inventer un chiffre
+    if not rows or all(value is None for row in rows for value in row):
+        start, end = _coverage()
+        return (
+            "AUCUNE DONNÉE ne correspond à cette requête (résultat vide ou NULL).\n"
+            f"La base couvre uniquement la période du {start} au {end}.\n"
+            "Ne donne AUCUN chiffre : indique que la période ou le filtre demandé "
+            "n'est pas couvert par la base."
+        )
 
     truncated = len(rows) > MAX_ROWS
     rows = rows[:MAX_ROWS]
