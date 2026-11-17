@@ -25,7 +25,7 @@ MAX_ROWS = 200  # plafond de lignes renvoyées au LLM (évite de saturer son con
 SCHEMA_REMINDER = (
     "Rappel : tables production(timestamp, filiere, puissance_mw, region), "
     "consommation(timestamp, consommation_mw, region), "
-    "meteo(timestamp, ville, temperature_c, vitesse_vent_kmh, nebulosite_pct). "
+    "meteo(timestamp, ville, temperature_c, vitesse_vent_kmh, nebulosite_pct), horaire, par ville. "
     "Filières : nucleaire, solaire, eolien, hydraulique, gaz, charbon, fioul, "
     "bioenergies. Syntaxe SQLite uniquement."
 )
@@ -88,13 +88,22 @@ def get_schema() -> str:
         date_range = conn.execute(
             "SELECT MIN(timestamp), MAX(timestamp) FROM consommation"
         ).fetchone()
+        meteo_range = conn.execute("SELECT MIN(timestamp), MAX(timestamp) FROM meteo").fetchone()
+        villes = [r[0] for r in conn.execute("SELECT DISTINCT ville FROM meteo ORDER BY ville")]
 
     return (
-        "Base SQLite des données électriques françaises (source RTE éCO2mix).\n"
-        "Horodatages stockés en UTC, pas de 15 minutes. Puissances en MW.\n"
+        "Base SQLite des données électriques françaises (source RTE éCO2mix) "
+        "et météo (source Open-Meteo).\n"
+        "Horodatages stockés en UTC. Puissances en MW.\n"
+        "production et consommation : données NATIONALES, pas de 15 minutes.\n"
         "Valeurs de production.filiere : nucleaire, solaire, eolien, hydraulique, "
         "gaz, charbon, fioul, bioenergies.\n"
-        f"Période couverte : {date_range[0]} -> {date_range[1]}\n\n"
+        f"Période RTE couverte : {date_range[0]} -> {date_range[1]}\n"
+        "meteo : relevés HORAIRES par ville (temperature_c en °C, vitesse_vent_kmh "
+        "en km/h, nebulosite_pct en %). Pour une météo nationale, fais la moyenne "
+        "sur toutes les villes.\n"
+        f"Villes météo : {', '.join(villes) or 'aucune (table vide)'}\n"
+        f"Période météo couverte : {meteo_range[0]} -> {meteo_range[1]}\n\n"
         "Tables :\n" + "\n".join(lines)
     )
 

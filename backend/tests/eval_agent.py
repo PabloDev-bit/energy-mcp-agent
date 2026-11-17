@@ -140,6 +140,31 @@ CASES: list[EvalCase] = [
         transform=lambda rows: [rows[0][0]],
     ),
     EvalCase(
+        id="temperature_paris_aout",
+        question="Quelle a été la température moyenne à Paris en août ?",
+        kind="numbers",
+        reference_sql=(
+            "SELECT AVG(temperature_c) FROM meteo"
+            " WHERE ville = 'Paris' AND timestamp >= '2026-08-01' AND timestamp < '2026-09-01'"
+        ),
+        transform=lambda rows: [rows[0][0]],
+        tolerance=0.03,
+    ),
+    EvalCase(
+        id="jour_plus_venteux_sept",
+        question=(
+            "Quel jour de septembre a été le plus venteux en moyenne sur "
+            "l'ensemble des villes ?"
+        ),
+        kind="contains_any",
+        reference_sql=(
+            "SELECT strftime('%d', timestamp) FROM meteo"
+            " WHERE timestamp >= '2026-09-01' AND timestamp < '2026-10-01'"
+            " GROUP BY strftime('%Y-%m-%d', timestamp) ORDER BY AVG(vitesse_vent_kmh) DESC LIMIT 1"
+        ),
+        transform=_day_labels,
+    ),
+    EvalCase(
         id="hors_periode",
         question="Quelle était la production nucléaire moyenne en janvier 2026 ?",
         kind="refusal",

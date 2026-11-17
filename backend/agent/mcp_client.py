@@ -19,11 +19,18 @@ from mcp.types import TextContent
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-# Serveurs MCP branchés sur l'agent (on ajoutera rte-data et viz ici)
+# Serveurs MCP branchés sur l'agent
 MCP_SERVERS: dict[str, StdioServerParameters] = {
+    # Base locale (historique RTE + météo), en lecture seule
     "sql": StdioServerParameters(
         command=sys.executable,  # le Python du venv actif
         args=["-m", "backend.mcp_servers.sql_query_server.server"],
+        cwd=str(PROJECT_ROOT),
+    ),
+    # Données en direct (mix RTE temps réel, prévisions météo, couverture de la base)
+    "data": StdioServerParameters(
+        command=sys.executable,
+        args=["-m", "backend.mcp_servers.rte_data_server.server"],
         cwd=str(PROJECT_ROOT),
     ),
 }
