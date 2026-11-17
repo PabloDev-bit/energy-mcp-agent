@@ -14,7 +14,7 @@ Exemples de questions :
 ## Architecture
 
 ```
-Question ──> FastAPI (/ask) ou chat CLI
+Question ──> Front React (Vite) ──> FastAPI (/ask)   ou   chat CLI
                 │
                 ▼
          Agent LangGraph (Qwen 2.5 14B via Ollama)
@@ -72,11 +72,27 @@ python -m backend.scripts.chat_cli
 # 3. API (documentation sur http://127.0.0.1:8000/docs)
 uvicorn backend.main:app --reload
 
-# 4. Évaluation automatique
+# 4. Interface web (dans un 2e terminal, l'API doit tourner)
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+
+# 5. Évaluation automatique
 python -m backend.tests.eval_agent
 ```
 
+## Interface web
+
+Front **React + Vite** (`frontend/`), aux couleurs de [pablopro.dev](https://pablopro.dev) :
+chat avec l'agent, questions d'exemple, statut de l'API et du modèle, et détail des
+outils MCP utilisés pour chaque réponse (avec la requête SQL écrite par l'agent).
+Un proxy Vite redirige `/api` vers FastAPI (port 8000), sans configuration CORS.
+
 ## Stack
 
-Python · FastAPI · LangGraph · LangChain · MCP (SDK Python) · SQLite / SQLAlchemy ·
+React · Vite · Python · FastAPI · LangGraph · LangChain · MCP (SDK Python) · SQLite / SQLAlchemy ·
 Ollama (Qwen 2.5) · httpx · API RTE éCO2mix (ODRÉ) · API Open-Meteo
+
+---
+
+Développé par **[pablopro.dev](https://pablopro.dev)** · Pablo Hernandez

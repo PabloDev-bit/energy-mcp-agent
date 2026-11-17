@@ -1,9 +1,17 @@
-// Appels à l'API FastAPI (via le proxy Vite : /api -> http://127.0.0.1:8000)
+// Appels à l'API FastAPI.
+// - En local : /api, redirigé par le proxy Vite vers http://127.0.0.1:8000
+// - En ligne (Vercel) : l'adresse publique de l'API, définie dans VITE_API_URL
+const BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 
 async function request(path, options = {}) {
-  const response = await fetch(`/api${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+  const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      // Évite la page d'avertissement de ngrok sur l'offre gratuite
+      'ngrok-skip-browser-warning': 'true',
+      ...options.headers,
+    },
   })
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))

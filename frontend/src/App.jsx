@@ -46,6 +46,7 @@ export default function App() {
     const history = messages
       .filter((m) => !m.error)
       .map(({ role, content }) => ({ role, content }))
+      .slice(-20) // l'API accepte au plus 20 messages d'historique
 
     setMessages((prev) => [...prev, { role: 'user', content: text }])
     setInput('')
